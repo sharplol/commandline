@@ -30,7 +30,7 @@ namespace CommandLine.Core
             var tokens = (from arg in arguments
                           from token in !arg.StartsWith("-", StringComparison.Ordinal)
                                ? new[] { Token.Value(arg) }
-                               : TokenizeLongName(arg, onError)
+                               : TokenizeLongName(arg, onError, arg[1] == '-' ? 2 : 1)
                           select token)
                             .Memoize();
 
