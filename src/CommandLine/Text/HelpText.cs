@@ -1010,7 +1010,7 @@ namespace CommandLine.Text
                     .MapIf(
                         specification.LongName.Length > 0,
                         it => it
-                            .AppendWhen(addDashesToOption, "--")
+                            .AppendWhen(addDashesToOption, "-|--")
                             .AppendFormat("{0}", specification.LongName)
                             .AppendFormatWhen(specification.MetaValue.Length > 0, "={0}", specification.MetaValue))
                     .ToString();

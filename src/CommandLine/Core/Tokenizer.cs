@@ -30,9 +30,7 @@ namespace CommandLine.Core
             var tokens = (from arg in arguments
                           from token in !arg.StartsWith("-", StringComparison.Ordinal)
                                ? new[] { Token.Value(arg) }
-                               : arg.StartsWith("--", StringComparison.Ordinal)
-                                     ? TokenizeLongName(arg, onError)
-                                     : TokenizeShortName(arg, nameLookup)
+                               : TokenizeLongName(arg, onError)
                           select token)
                             .Memoize();
 
@@ -142,60 +140,14 @@ namespace CommandLine.Core
                     return explodedTokens;
                 };
         }
-
-        private static IEnumerable<Token> TokenizeShortName(
-            string value,
-            Func<string, NameLookupResult> nameLookup)
-        {
-            //Allow single dash as a value
-            if (value.Length == 1 && value[0] == '-')
-            {
-                yield return Token.Value(value);
-                yield break;
-            }
-            if (value.Length > 1 && value[0] == '-' && value[1] != '-')
-            {
-                var text = value.Substring(1);
-
-                if (char.IsDigit(text[0]))
-                {
-                    yield return Token.Value(value);
-                    yield break;
-                }
-
-                if (value.Length == 2)
-                {
-                    yield return Token.Name(text);
-                    yield break;
-                }
-
-                var i = 0;
-                foreach (var c in text)
-                {
-                    var n = new string(c, 1);
-                    var r = nameLookup(n);
-                    // Assume first char is an option
-                    if (i > 0 && r == NameLookupResult.NoOptionFound) break;
-                    i++;
-                    yield return Token.Name(n);
-                    // If option expects a value (other than a boolean), assume following chars are that value
-                    if (r == NameLookupResult.OtherOptionFound) break;
-                }
-
-                if (i < text.Length)
-                {
-                    yield return Token.Value(text.Substring(i));
-                }
-            }
-        }
-
         private static IEnumerable<Token> TokenizeLongName(
             string value,
-            Action<Error> onError)
+            Action<Error> onError,
+            int hyphens = 2)
         {
-            if (value.Length > 2 && value.StartsWith("--", StringComparison.Ordinal))
+            if (value.Length > hyphens && value.StartsWith(new string('-', hyphens), StringComparison.Ordinal))
             {
-                var text = value.Substring(2);
+                var text = value.Substring(hyphens);
                 var equalIndex = text.IndexOf('=');
                 if (equalIndex <= 0)
                 {
